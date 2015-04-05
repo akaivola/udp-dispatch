@@ -1,8 +1,8 @@
 (ns serial
-  (:require [serialport :as sp :refer [SerialPort]]
-            [Bacon :as b]))
+  (:require [serialport :refer [SerialPort]]
+            [Baconjs :refer [Bus]]))
 
-(def attitude (b/Bus.))
+(def attitude (Bus.))
 
 (def ^:private hatire-offset 4)
 
