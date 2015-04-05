@@ -1,5 +1,7 @@
-(ns udp-dispatch
-  (:require [dgram]))
+(ns udp-dispatch.core
+  (:require [dgram]
+            [Baconjs :as Bacon]
+            [ramda :refer [partial zip]]))
 
 (def attitude (let [a (require "./serial")]
                 a.attitude))
@@ -28,6 +30,18 @@
      :localhost closef)
     nil))
 
-(-> attitude
-    (.map ypr->buf)
-    (.onValue send-datagram!))
+(defn rand []
+  (Math.floor (* 100 (Math.random))))
+
+(def arr->ypr (partial zip [:yaw :pitch :roll]))
+
+(def test-stream
+  (-> (Bacon.repeat rand)
+      (.slidingWindow 3 3)
+      (.toEventStream)
+      (.map arr->ypr)
+      (.debounce 1000)))
+
+; (-> test-stream
+;    (.map ypr->buf)
+;    (.onValue send-datagram!))
