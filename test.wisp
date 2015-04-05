@@ -6,9 +6,8 @@
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
 (def test-stream
-  (-> (Bacon.repeat u.rand)
-      (.slidingWindow 3 3)
-      (.toEventStream)
+  (-> (Bacon.interval 333 1)
+      (.map u.rand)
+      (.bufferWithCount 3)
       (.map u.arr->ypr)
-      (.debounce 1000)
       (.onValue (fn [v] (console.log v)))))
