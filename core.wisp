@@ -42,6 +42,5 @@
       (.map arr->ypr)))
 
 (-> attitude ;test-stream
-    (.doAction log)
     (.map ypr->buf)
     (.onValue send-datagram!))
