@@ -30,7 +30,8 @@
   (-> accumulator
       (.skipWhile
        (fn [buffer]
-         (not (= 0xAAAA (buffer.readUInt16LE 0)))))
+         (and (>= 2 buffer.length)
+              (not (= 0xAAAA (buffer.readUInt16LE 0))))))
       (.scan [(Buffer. 0) (Buffer. 0)]
        (fn [acc buffer]
          (let [buffers      (-> (filter (notf full?) acc)
