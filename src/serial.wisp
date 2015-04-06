@@ -2,7 +2,7 @@
   (:require [serialport :refer [SerialPort]]
             [Baconjs :refer [Bus]]
             [ramda :refer [partial nth map reduce filter]]
-            [wisp.runtime :refer [+ = < <=]]))
+            [wisp.runtime :refer [+ = < <= >= >]]))
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
