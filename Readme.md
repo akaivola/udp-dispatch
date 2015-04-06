@@ -1,3 +1,18 @@
+I want to have head tracking in Elite Dangerous Mac OS X.
+
+This is a work in progress to integrate Hatire -protocol using serially-linked head tracker,
+opentracker for curve filtering and ControllerMate for virtual joystick axis mapping
+for getting head tracking to work in Elite Dangerous Mac Os X port.
+
+I have a DIY head tracking using gyros and outputting gyroscopic data in HATire frame format
+over Bluetooth.
+
+Using Wine I can get curves filtering and Accela filter to work by sending UDP packets to and from Opentracker.
+
+TODO:
+UDP packets are sent to ControllerMate using MIDI, which maps the MIDI signal to virtual joystick axes.
+
+
 ```
   0 // HAT structure
   1 typedef struct  {
