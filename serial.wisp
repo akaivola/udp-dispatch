@@ -1,12 +1,49 @@
-(ns serial
+(ns udp-dispatch.serial
   (:require [serialport :refer [SerialPort]]
-            [Baconjs :refer [Bus]]))
+            [Baconjs :refer [Bus]]
+            [ramda :refer [partial nth map reduce filter]]
+            [wisp.runtime :refer [+ = < <=]]))
 
-(def attitude (Bus.))
+(defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
+(def ^:private accumulator (Bus.))
 (def ^:private hatire-offset 4)
-
 (def ^:private hatire-read-length 12)
+(def ^:private hatire-length 30)
+(def first (partial nth 0))
+
+(defn buf->ypr [buffer]
+  (let [yaw   (buffer.readFloatLE hatire-offset)
+        pitch (buffer.readFloatLE (+ hatire-offset 4))
+        roll  (buffer.readFloatLE (+ hatire-offset 8))]
+    {:yaw yaw
+     :pitch pitch
+     :roll roll}))
+
+(defn- full? [buffer]
+  (= hatire-length buffer.length))
+
+(defn notf [pred]
+  (fn [x] (not (pred x))))
+
+(def attitude
+  (-> accumulator
+      (.skipWhile
+       (fn [buffer]
+         (not (= 0xAAAA (buffer.readUInt16LE 0)))))
+      (.scan [(Buffer. 0) (Buffer. 0)]
+       (fn [acc buffer]
+         (let [buffers      (-> (filter (notf full?) acc)
+                                (.concat buffer))
+               total-length (reduce + 0 (map (fn [b] b.length) buffers))
+               concatenated (Buffer.concat buffers total-length)
+               fst (concatenated.slice 0 hatire-length)
+               snd (concatenated.slice hatire-length concatenated.length)]
+           [fst snd])))
+      (.toEventStream)
+      (.map first)
+      (.filter full?)
+      (.map buf->ypr)))
 
 (def ^:private port (SerialPort. "/dev/tty.HC-06-DevB"
                        {:baudrate 115200
@@ -17,11 +54,6 @@
 (defn- on-open [error]
   (port.on :data
            (fn [buffer]
-             (let [yaw   (buffer.readFloatLE hatire-offset)
-                   pitch (buffer.readFloatLE (+ hatire-offset 4))
-                   roll  (buffer.readFloatLE (+ hatire-offset 8))]
-               (attitude.push {:yaw yaw
-                               :pitch pitch
-                               :roll roll})))))
+             (accumulator.push buffer))))
 
 (port.open on-open)

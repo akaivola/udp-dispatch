@@ -1,10 +1,8 @@
 (ns udp-dispatch.core
   (:require [dgram]
             [Baconjs :as Bacon]
+            [udp-dispatch.serial :refer [attitude]]
             [ramda :refer [partial zip-obj]]))
-
-(def attitude (let [a (require "./serial")]
-                a.attitude))
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
@@ -18,17 +16,17 @@
         _ (b.writeDoubleLE (:roll ypr) 40)]
     b))
 
+(def client (let [c (dgram.createSocket :udp4)
+                  _ (c.bind 4243)]
+              c))
+
 (defn- send-datagram! [buffer]
-  (let [client (dgram.createSocket :udp4)
-        _ (client.bind 4243)
-        closef (fn [err bytes] (client.close))]
-    (client.send
-     buffer
-     0
-     buffer.length
-     4242
-     :localhost closef)
-    nil))
+  (client.send
+    buffer
+    0
+    buffer.length
+    4242
+    :localhost))
 
 (defn rand []
   (Math.floor (* 100 (Math.random))))
@@ -43,7 +41,7 @@
       (.bufferWithCount 3)
       (.map arr->ypr)))
 
-(-> test-stream
+(-> attitude ;test-stream
     (.doAction log)
     (.map ypr->buf)
     (.onValue send-datagram!))
