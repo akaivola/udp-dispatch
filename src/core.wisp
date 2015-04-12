@@ -2,6 +2,8 @@
   (:require [dgram]
             [Baconjs :as Bacon]
             [udp-dispatch.serial :refer [attitude]]
+            [udp-dispatch.midi :as midi]
+            [udp-dispatch.util :refer [first second]]
             [ramda :refer [partial zip-obj]]))
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
@@ -28,19 +30,12 @@
     4242
     :localhost))
 
-(defn rand []
-  (Math.floor (* 100 (Math.random))))
-
 (def arr->ypr (partial zip-obj [:yaw :pitch :roll]))
 
 (defn- log [v] (console.log v))
 
-(def test-stream
-  (-> (Bacon.interval 333 1)
-      (.map rand)
-      (.bufferWithCount 3)
-      (.map arr->ypr)))
-
 (-> attitude ;test-stream
     (.map ypr->buf)
     (.onValue send-datagram!))
+
+(midi.start!)

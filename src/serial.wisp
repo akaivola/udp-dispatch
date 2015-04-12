@@ -1,7 +1,8 @@
 (ns udp-dispatch.serial
   (:require [serialport :refer [SerialPort]]
             [Baconjs :refer [Bus]]
-            [ramda :refer [partial nth map reduce filter]]
+            [udp-dispatch.serial :refer [first]]
+            [ramda :refer [map reduce filter]]
             [wisp.runtime :refer [+ = < <= >= >]]))
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
@@ -10,7 +11,6 @@
 (def ^:private hatire-offset 4)
 (def ^:private hatire-read-length 12)
 (def ^:private hatire-length 30)
-(def first (partial nth 0))
 
 (defn buf->ypr [buffer]
   (let [yaw   (buffer.readFloatLE hatire-offset)
@@ -53,6 +53,7 @@
                        ))
 
 (defn- on-open [error]
+  (console.log "Serial port opened"
   (port.on :data
            (fn [buffer]
              (accumulator.push buffer))))
