@@ -1,9 +1,9 @@
 (ns udp-dispatch.serial
   (:require [serialport :refer [SerialPort]]
             [Baconjs :refer [Bus]]
-            [udp-dispatch.serial :refer [first]]
+            [udp-dispatch.util :refer [first]]
             [ramda :refer [map reduce filter]]
-            [wisp.runtime :refer [+ = < <= >= >]]))
+            [wisp.runtime :refer [when + = < <= >= >]]))
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
@@ -53,7 +53,7 @@
                        ))
 
 (defn- on-open [error]
-  (console.log "Serial port opened"
+  (console.log (str "Serial port opened" (if error (str ", error: " error) "")))
   (port.on :data
            (fn [buffer]
              (accumulator.push buffer))))

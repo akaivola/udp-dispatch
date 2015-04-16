@@ -45,7 +45,7 @@ gulp.task('watch', function() {
 function nodemonFor(script) {
   return function() {
     nodemon({
-      script: 'lib/' + script,
+      script: script,
       ext: 'js',
       env: {}
     })
