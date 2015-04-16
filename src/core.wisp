@@ -6,7 +6,7 @@
             [udp-dispatch.util :refer [first second ypr->buf]]
             [wisp.runtime :refer [= > <]]
             [keypress]
-            [ramda :refer [partial zip-obj]]))
+            [ramda :refer [partial zip-obj mapObj]]))
 
 
 (def center (new Bacon.Bus))
@@ -54,6 +54,16 @@
 (process.stdin.resume)
 (center.onValue (fn [v] (console.log "Zeroed to" v)))
 
+(defn curves [number]
+  (let [comp (Math.abs number)]
+    (if (< comp 5)
+      number
+      (if (< comp 12)
+        (* 1.8 number)
+        (if (< comp 27)
+          (* 2.6 number)
+          (* 3.5 number))))))
+
 (defn offset [number to-offset] (+ number (* -1 to-offset)))
 (defn zero [ypr center]
   {:yaw (offset (:yaw ypr) (:yaw center))
@@ -61,6 +71,7 @@
    :roll (offset (:roll ypr) (:roll center))})
 
 (-> (Bacon.combineWith zero normalized-attitude center)
+    (.map mapObj curves)
     (.onValue midi.ypr->midi!))
 
-(console.log "Press q to quit. c to center")
+(console.log "Press q to quit. c to center. Press c to start after Serial port is opened.")
