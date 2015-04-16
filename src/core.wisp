@@ -60,7 +60,7 @@
       number
       (if (< comp 12)
         (* 1.8 number)
-        (if (< comp 27)
+        (if (< comp 24)
           (* 2.6 number)
           (* 3.5 number))))))
 
