@@ -2,38 +2,49 @@
   (:require [midi]
             [dgram]
             [wisp.runtime :refer [>=]]
-            [udp-dispatch.util :refer [buf->ypr]]
+            [udp-dispatch.util :refer [first second buf->ypr]]
             [Baconjs :as Bacon]))
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
-(def yaw-neg 208)
-(def yaw-pos 209)
-(def pitch-neg 210)
-(def pitch-pos 211)
+(def yaw-a 208)
+(def yaw-b 209)
+(def yaw [yaw-a yaw-b])
+
+(def pitch-a 210)
+(def pitch-b 211)
+(def pitch [pitch-a pitch-b])
 
 (def output (let [o (new midi.output)
                   _ (o.openVirtualPort "udp-dispatch")]
               o))
 
-(defn send [channel value]
-  (output.sendMessage [channel value 0]))
+(defn value->chans [value]
+  (if (> value 0)
+    (let [remainder (% value 255)]
+      [(Math.floor (/ value 255)) remainder])
+    [0 value]))
 
-(def server (let [c (dgram.createSocket :udp4)
-                  _ (c.bind 4222)]
-              c))
+(defn scale [raw-value]
+  (Math.round
+   (* 100
+      (+ 180 raw-value))))
+
+(defn send [yaw-or-pitch raw-value]
+  (let [scaled      (scale raw-value)
+        chan-values (value->chans scaled)]
+    (output.sendMessage [(first yaw-or-pitch) (first chan-values) 0])
+    (output.sendMessage [(second yaw-or-pitch) (second chan-values) 0])))
+
+(def server
+  (let [c (dgram.createSocket :udp4)
+        _ (c.bind 4222)]
+    c))
 
 (defn ypr->midi! [m]
   (do
-    (let [yaw (:yaw m)
-          pitch (:pitch m)]
-      (if (>= yaw 0)
-        (do (send yaw-pos yaw) (send yaw-neg 0))
-        (do (send yaw-neg (* -1 yaw)) (send yaw-pos 0)))
-
-      (if (>= pitch 0)
-        (do (send pitch-pos pitch) (send pitch-neg 0))
-        (do (send pitch-neg (* -1 pitch)) (send pitch-pos 0))))))
+    (send yaw (:yaw m))
+    (send pitch (:pitch m))))
 
 (defn read-datagram [server]
   (-> (Bacon.fromEvent server :message)

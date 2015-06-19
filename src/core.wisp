@@ -15,18 +15,6 @@
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
-(def client (let [c (dgram.createSocket :udp4)
-                  _ (c.bind 4243)]
-              c))
-
-(defn- send-datagram! [buffer]
-  (client.send
-    buffer
-    0
-    buffer.length
-    4242
-    :localhost))
-
 (def arr->ypr (partial zip-obj [:yaw :pitch :roll]))
 
 (defn- log [v] (console.log v))
@@ -37,7 +25,7 @@
     degree))
 
 (def normalized-attitude
-  (-> attitude ;test-stream
+  (-> attitude
       (.map (fn [ypr]
               {:yaw  (normalize (:yaw ypr))
                :pitch (normalize (:pitch ypr))
@@ -54,16 +42,6 @@
 (process.stdin.resume)
 (center.onValue (fn [v] (console.log "Zeroed to" v)))
 
-(defn curves [number]
-  (let [comp (Math.abs number)]
-    (if (< comp 5)
-      number
-      (if (< comp 12)
-        (* 1.8 number)
-        (if (< comp 24)
-          (* 2.6 number)
-          (* 3.5 number))))))
-
 (defn offset [number to-offset] (+ number (* -1 to-offset)))
 (defn zero [ypr center]
   {:yaw (offset (:yaw ypr) (:yaw center))
@@ -71,7 +49,6 @@
    :roll (offset (:roll ypr) (:roll center))})
 
 (-> (Bacon.combineWith zero normalized-attitude center)
-    (.map mapObj curves)
     (.onValue midi.ypr->midi!))
 
 (console.log "Press q to quit. c to center. Press c to start after Serial port is opened.")
