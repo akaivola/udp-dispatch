@@ -3,6 +3,7 @@
 
 (def first (partial nth 0))
 (def second (partial nth 1))
+(def third (partial nth 2))
 
 (defn ypr->buf [ypr]
   (let [b (Buffer. (* 6 8))

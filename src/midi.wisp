@@ -21,7 +21,7 @@
 
 (defn value->chans [value]
   (if (> value 0)
-    (let [remainder (% value 255)]
+    (let [remainder (mod value 255)]
       [(Math.floor (/ value 255)) remainder])
     [0 value]))
 
