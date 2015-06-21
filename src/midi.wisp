@@ -2,39 +2,49 @@
   (:require [midi]
             [dgram]
             [wisp.runtime :refer [>=]]
-            [udp-dispatch.util :refer [first second buf->ypr]]
+            [udp-dispatch.util :refer [first second third buf->ypr]]
             [Baconjs :as Bacon]))
 
 (defmacro -> [& operations] (reduce (fn [form operation] (cons (first operation) (cons form (rest operation)))) (first operations) (rest operations)))
 
 (def yaw-a 208)
 (def yaw-b 209)
-(def yaw [yaw-a yaw-b])
+(def yaw-c 210)
+(def yaw [yaw-a yaw-b yaw-c])
 
-(def pitch-a 210)
-(def pitch-b 211)
-(def pitch [pitch-a pitch-b])
+(def pitch-a 211)
+(def pitch-b 212)
+(def pitch-c 213)
+(def pitch [pitch-a pitch-b pitch-c])
 
 (def output (let [o (new midi.output)
                   _ (o.openVirtualPort "udp-dispatch")]
               o))
 
 (defn value->chans [value]
-  (if (> value 0)
-    (let [remainder (mod value 255)]
-      [(Math.floor (/ value 255)) remainder])
-    [0 value]))
+  (let [a (bit-and (bit-shift-right value 16) 255)
+        b (bit-and (bit-shift-right value 8) 255)
+        c (bit-and value 255)]
+    [a b c]))
 
-(defn scale [raw-value]
-  (Math.round
-   (* 100
-      (+ 180 raw-value))))
+(def max (Math.pow 2 24))
+(defn scale
+  "Scale number to a positive 0-90 degree arc using 3 bytes"
+  [raw-value]
+  (-> max
+      (/ 90)
+      (* (+ 45 raw-value))
+      (Math.round)
+      (- 1)
+      (Math.min max)
+      (Math.max 0)))
 
 (defn send [yaw-or-pitch raw-value]
   (let [scaled      (scale raw-value)
         chan-values (value->chans scaled)]
     (output.sendMessage [(first yaw-or-pitch) (first chan-values) 0])
-    (output.sendMessage [(second yaw-or-pitch) (second chan-values) 0])))
+    (output.sendMessage [(second yaw-or-pitch) (second chan-values) 0])
+    (output.sendMessage [(third yaw-or-pitch) (third chan-values) 0])))
 
 (def server
   (let [c (dgram.createSocket :udp4)

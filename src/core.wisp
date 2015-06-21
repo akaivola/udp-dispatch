@@ -27,7 +27,7 @@
     degree))
 
 (def normalized-attitude
-  (let [sample-size   4
+  (let [sample-size   2
         calculate-sma (fn [sma m-n m]
                         (- (+ sma (/ m-n sample-size)) (/ m sample-size)))]
     (-> attitude
