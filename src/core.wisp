@@ -1,7 +1,7 @@
 (ns udp-dispatch.core
   (:require [dgram]
             [Baconjs :as Bacon]
-            [udp-dispatch.serial :refer [attitude]]
+            [udp-dispatch.serial :refer [attitude re-open]]
             [udp-dispatch.midi :as midi]
             [udp-dispatch.util :refer [first second third ypr->buf]]
             [wisp.runtime :refer [= > <]]
@@ -65,6 +65,9 @@
             (key? :a)
             (if (not= 1 (+ alpha 0.1))
               (do (set! alpha (+ alpha 0.1)) (console.log "Alpha set to" alpha)))
+
+            (key? :r)
+            (re-open)
 
             (key? :x)
               (process.exit)))))

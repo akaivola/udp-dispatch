@@ -1,6 +1,6 @@
 (ns udp-dispatch.serial
   (:require [serialport :refer [SerialPort]]
-            [Baconjs :refer [Bus]]
+            [Baconjs :refer [Bus Error]]
             [udp-dispatch.util :refer [first]]
             [ramda :refer [map reduce filter]]
             [wisp.runtime :refer [when + = < <= >= >]]))
@@ -53,9 +53,23 @@
                        ))
 
 (defn- on-open [error]
-  (console.log (str "Serial port opened" (if error (str ", error: " error) "")))
-  (port.on :data
-           (fn [buffer]
-             (accumulator.push buffer))))
+  (if error
+    (do
+      (console.log (str "error: " error))
+      (port.open on-open))
+    (do
+      (console.log (str "Serial port opened"))
+      (port.on :data
+        (fn [buffer]
+          (accumulator.push buffer))))))
 
 (port.open on-open)
+
+(port.on :error (fn [error]
+                  (console.log error)
+                  (re-open)))
+
+(defn re-open []
+  (try (port.close)
+       (catch err))
+  (port.open on-open))
