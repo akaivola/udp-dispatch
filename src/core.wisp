@@ -28,8 +28,10 @@
 
 (def normalized-attitude
   (let [sample-size   2
-        calculate-sma (fn [sma m-n m]
-                        (- (+ sma (/ m-n sample-size)) (/ m sample-size)))]
+        minimum-delta 0.17
+        delta (fn [k samples]
+                (- (aget (second samples) k)
+                   (aget (first samples) k)))]
     (-> attitude
         (.map (fn [ypr]
                 {:yaw  (normalize (:yaw ypr))
@@ -37,16 +39,15 @@
                  :roll (normalize (:roll ypr))}))
         (.sliding-window sample-size sample-size)
         (.scan {:yaw 0 :pitch 0 :roll 0}
-               (fn [sma samples]
-                 {:yaw   (or (calculate-sma  (:yaw sma)
-                                             (:yaw (first samples))
-                                             (:yaw (nth (- sample-size 1) samples))) 0)
-                  :pitch (or (calculate-sma  (:pitch sma)
-                                             (:pitch (first samples))
-                                             (:pitch (nth (- sample-size 1) samples))) 0)
-                  :roll  (or (calculate-sma  (:roll sma)
-                                             (:roll (first samples))
-                                             (:roll (nth (- sample-size 1) samples))) 0)}))
+               (fn [acc samples]
+                 (let [d1 (Math.abs (delta :yaw samples))
+                       d2 (Math.abs (delta :pitch samples))]
+                   (if (or (> d1 minimum-delta)
+                           (> d2 minimum-delta))
+                     (second samples)
+                     {:yaw   (+ (:yaw acc)   (/ (delta :yaw samples) 4))
+                      :pitch (+ (:pitch acc) (/ (delta :pitch samples) 4))
+                      :roll  (+ (:roll acc)  (/ (delta :roll samples) 4))}))))
         (.to-event-stream))))
 
 (defn- pos? [x] (and x (> x 0)))
