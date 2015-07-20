@@ -30,8 +30,13 @@
   (-> accumulator
       (.skipWhile
        (fn [buffer]
-         (and (>= 2 buffer.length)
-              (not (= 0xAAAA (buffer.readUInt16LE 0))))))
+         (let [begin-of-frame? (and (= 0xAA (aget buffer 0))
+                                    (= 0xAA (aget buffer 1)))]
+           (if begin-of-frame?
+             (console.log "Beginning frame found: " buffer)
+             (console.log "Seeking beginning of frame, got: " buffer))
+           ; skips elements until falsy returned once
+           (not begin-of-frame?))))
       (.scan [(Buffer. 0) (Buffer. 0)]
        (fn [acc buffer]
          (let [buffers      (-> (filter (notf full?) acc)
@@ -64,7 +69,6 @@
           (accumulator.push buffer))))))
 
 (port.open on-open)
-
 (port.on :error (fn [error]
                   (console.log error)
                   (re-open)))
