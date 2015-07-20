@@ -21,6 +21,17 @@
                   _ (o.openVirtualPort "udp-dispatch")]
               o))
 
+(def input (let [i (new midi.input)
+                 _ (i.openPort 0)]
+             i))
+
+(def midi-input (-> (Bacon.fromBinder (fn [sink]
+                                          (input.on :message (fn [deltaTime message]
+                                                           (sink message)))
+                                          (fn [])))))
+
+(midi-input.onValue (fn [val] (console.log val)))
+
 (defn value->chans [value]
   (let [a (bit-and (bit-shift-right value 16) 255)
         b (bit-and (bit-shift-right value 8) 255)
