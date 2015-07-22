@@ -77,6 +77,16 @@
 (process.stdin.resume)
 (center.onValue (fn [v] (console.log "Zeroed to" v)))
 
+(def notes (-> (midi.midi-input.filter (fn [values] (= 144 (aget values 0))))
+               (.map second)))
+
+
+; center on channel zero
+(-> (notes.filter (fn [channel] (= 0 channel)))
+    (.doAction (fn [v] (console.log "Centering")))
+    (.onValue (fn [_] (-> (normalized-attitude.take 1)
+                         (.onValue (fn [v] (center.push v)))))))
+
 (defn offset [number to-offset] (+ number (* -1 to-offset)))
 (defn zero [ypr center]
   {:yaw (offset (:yaw ypr) (:yaw center))
