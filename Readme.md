@@ -1,18 +1,27 @@
-I want to have head tracking in Elite Dangerous Mac OS X.
+# Full headlook support on OS X on any game
 
-This is a work in progress to integrate Hatire -protocol using serially-linked head tracker,
-opentracker for curve filtering and ControllerMate for virtual joystick axis mapping
-for getting head tracking to work in Elite Dangerous Mac Os X port.
+## Requirements
 
-I have a DIY head tracking using gyros and outputting gyroscopic data in HATire frame format
-over Bluetooth.
+- ControllerMate
+- Paired bluetooth enabled Head tracker configured to broadcast Hatire protocol with bluetooth
 
-Using Wine I can get curves filtering and Accela filter to work by sending UDP packets to and from Opentracker.
+## Background
 
-TODO:
-UDP packets are sent to ControllerMate using MIDI, which maps the MIDI signal to virtual joystick axes.
+I wanted to have gyro+magnetograph head tracking in Elite Dangerous on Mac OS X.
 
+What resulted is a generic head look support for any game on Mac OS X.
 
+## Implementation
+
+Your bluetooth enabled head tracker is autodiscovered and connected to, provided it is the only paired bluetooth device.
+
+Hatire -protocol is used for raw serial protocol.
+
+Integration to Mac OS X is done using midi protocol directly to ControllerMate.
+
+The head tracking curve is exponentially scaled. small head movements near center are mitigated and looking to the sides and up/down are exaggerated.
+
+## Hatire protocol
 ```
   0 // HAT structure
   1 typedef struct  {
@@ -26,3 +35,7 @@ UDP packets are sent to ControllerMate using MIDI, which maps the MIDI signal to
 
 Offset 4, length 12,
 4 byte (32-bit) float.
+
+## Bugs
+
+- Reconnecting by pressing `r` does not seek beginning frame properly and output values get way out of range.
