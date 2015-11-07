@@ -30,7 +30,7 @@
                                                            (sink message)))
                                           (fn [])))))
 
-(midi-input.onValue (fn [val] (console.log val)))
+; (midi-input.onValue (fn [val] (console.log val)))
 
 (defn value->chans [value]
   (let [a (bit-and (bit-shift-right value 16) 255)
