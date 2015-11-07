@@ -9,7 +9,9 @@
 ## How to use
 
 `npm install`
+
 `gulp wisp`
+
 `node node_modules/gulp/bin/gulp.js wisp`
 
 Start with:
