@@ -53,16 +53,21 @@
 
 (def ^:private port (new bluetooth-serial-port.BluetoothSerialPort))
 
-(port.on :found
-         (fn [address name]
-           (console.log "Found bluetooth device" address name)
-           (port.find-serial-port-channel
-            address
-            (fn [channel]
-              (console.log "Connected to " address channel)
-              (port.on :data accumulator.push))
-            (fn []
-              (console.log "Error connecting to " address)))))
+(port.on
+ :found
+ (fn [address name]
+   (console.log "Found bluetooth device" name "[" address "]")
+   (port.find-serial-port-channel
+    address
+    (fn [channel]
+      (console.log "Connecting to" address)
+      (port.connect
+       address channel
+       (fn []
+         (console.log "Connected to" address)
+         (port.on :data (fn [buffer] (accumulator.push buffer))))))
+    (fn []
+      (console.log "Error connecting to " address)))))
 
 (defn- on-open [error]
   (if error
