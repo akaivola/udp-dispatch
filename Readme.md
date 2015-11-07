@@ -5,6 +5,14 @@
 - ControllerMate
 - Paired bluetooth enabled Head tracker configured to broadcast Hatire protocol with bluetooth
 
+## How to use
+
+`npm install`
+
+`gulp wisp`
+
+`node lib/core.js`
+
 ## Background
 
 I wanted to have gyro+magnetograph head tracking in Elite Dangerous on Mac OS X.
@@ -20,6 +28,7 @@ Hatire -protocol is used for raw serial protocol.
 Integration to Mac OS X is done using midi protocol directly to ControllerMate.
 
 The head tracking curve is exponentially scaled. small head movements near center are mitigated and looking to the sides and up/down are exaggerated.
+
 
 ## Hatire protocol
 ```
