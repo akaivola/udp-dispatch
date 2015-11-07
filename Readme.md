@@ -2,15 +2,17 @@
 
 ## Requirements
 
+- Node.js (`brew install node`)
 - ControllerMate
 - Paired bluetooth enabled Head tracker configured to broadcast Hatire protocol with bluetooth
 
 ## How to use
 
 `npm install`
-
 `gulp wisp`
+`node node_modules/gulp/bin/gulp.js wisp`
 
+Start with:
 `node lib/core.js`
 
 Example output:
