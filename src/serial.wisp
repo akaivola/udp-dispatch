@@ -1,5 +1,5 @@
 (ns udp-dispatch.serial
-  (:require [serialport :refer [SerialPort]]
+  (:require [bluetooth-serial-port]
             [Baconjs :refer [Bus Error]]
             [udp-dispatch.util :refer [first]]
             [ramda :refer [map reduce filter]]
@@ -51,11 +51,23 @@
       (.filter full?)
       (.map buf->ypr)))
 
-(def ^:private port (SerialPort. "/dev/tty.HC-06-DevB"
-                       {:baudrate 115200
-                        :buffersize 30}
-                       false ; do not open immediately
-                       ))
+(def ^:private port (new bluetooth-serial-port.BluetoothSerialPort))
+
+(port.on
+ :found
+ (fn [address name]
+   (console.log "Found bluetooth device" name "[" address "]")
+   (port.find-serial-port-channel
+    address
+    (fn [channel]
+      (console.log "Connecting to" address)
+      (port.connect
+       address channel
+       (fn []
+         (console.log "Connected to" address)
+         (port.on :data (fn [buffer] (accumulator.push buffer))))))
+    (fn []
+      (console.log "Error connecting to " address)))))
 
 (defn- on-open [error]
   (if error
@@ -64,16 +76,11 @@
       (port.open on-open))
     (do
       (console.log (str "Serial port opened"))
-      (port.on :data
-        (fn [buffer]
-          (accumulator.push buffer))))))
-
-(port.open on-open)
-(port.on :error (fn [error]
-                  (console.log error)
-                  (re-open)))
+      )))
 
 (defn re-open []
-  (try (port.close)
-       (catch err))
-  (port.open on-open))
+  (port.close)
+  (port.inquire)
+  true)
+
+(port.inquire)
