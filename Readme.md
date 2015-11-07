@@ -2,6 +2,7 @@
 
 ## Requirements
 
+- Homebrew, XCode
 - Node.js (`brew install node`)
 - ControllerMate
 - Paired bluetooth enabled Head tracker configured to broadcast Hatire protocol with bluetooth
