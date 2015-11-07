@@ -13,6 +13,29 @@
 
 `node lib/core.js`
 
+Example output:
+```
+$ node lib/core.js
+Found bluetooth device HC-06 [ 10-14-05-22-02-47 ]
+Press x to quit. c to center. Press c to start after Serial port is opened.
+Connecting to 10-14-05-22-02-47
+Connected to 10-14-05-22-02-47
+Beginning frame found:  <Buffer aa aa db 01 9f b8 5e 43 10 3d 18 c2 62 e4 48 41 00 00 00 00 00 00 00 00 00 00 00 00 55 55>
+```
+
+Pressing `c` to zero the device on current direction:
+```
+Zeroed to { yaw: 59.28840637207031,
+  pitch: -33.5324592590332,
+  roll: 18.99624252319336 }
+```
+
+## Setting up ControllerMate
+
+Import the provided .cmate file
+
+...  more instructions to be writen ...
+
 ## Background
 
 I wanted to have gyro+magnetograph head tracking in Elite Dangerous on Mac OS X.
